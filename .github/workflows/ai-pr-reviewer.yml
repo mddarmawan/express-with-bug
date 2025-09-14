@@ -46,3 +46,6 @@ jobs:
           review_comment_lgtm: true
           disable_review: false
           max_files: 50
+          openai_heavy_model: deepseek-reasoner
+          openai_light_model: deepseek-chat
+          openai_base_url: https://api.deepseek.com
