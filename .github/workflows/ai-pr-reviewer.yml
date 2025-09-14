@@ -26,5 +26,32 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           debug: true
-          review_simple_changes: false
-          review_comment_lgtm: false
+          review_simple_changes: true
+          review_comment_lgtm: true
+          disable_review: false
+          max_files: 50
+          path_filters: |
+            !dist/**
+            !node_modules/**
+            !*.min.js
+            !*.min.css
+            !*.lock
+            !*.log
+            !*.md
+            !*.json
+            !*.yml
+            !*.yaml
+            !*.txt
+            !*.gitignore
+            !*.env*
+            !coverage/**
+            !.git/**
+            !.github/**
+            !tests/**
+            !__tests__/**
+            !test/**
+            !spec/**
+            !*.test.js
+            !*.test.ts
+            !*.spec.js
+            !*.spec.ts
