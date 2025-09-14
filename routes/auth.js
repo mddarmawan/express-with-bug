@@ -51,7 +51,9 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message,
+      stack: error.stack
     });
   }
 });
@@ -104,7 +106,9 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message,
+      stack: error.stack
     });
   }
 });
@@ -122,7 +126,9 @@ router.get('/profile', authenticateToken, async (req, res) => {
     console.error('Profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message,
+      stack: error.stack
     });
   }
 });

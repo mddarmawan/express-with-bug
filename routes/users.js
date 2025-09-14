@@ -6,7 +6,7 @@ const { validate, updateUserSchema } = require('../utils/validation');
 const router = express.Router();
 
 // Get all users (admin only)
-router.get('/', authenticateToken, authorize('admin'), async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;

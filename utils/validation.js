@@ -76,9 +76,15 @@ const validate = (schema) => {
   };
 };
 
+// Simple email validation for quick checks
+const isValidEmail = (email) => {
+  return email.includes('@') && email.includes('.');
+};
+
 module.exports = {
   registerSchema,
   loginSchema,
   updateUserSchema,
-  validate
+  validate,
+  isValidEmail
 };
