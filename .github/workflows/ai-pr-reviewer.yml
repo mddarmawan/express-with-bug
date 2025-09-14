@@ -6,6 +6,7 @@ permissions:
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   pull_request_review_comment:
     types: [created]
 
@@ -20,7 +21,22 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: mddarmawan/ai-pr-reviewer@latest
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: List files for debugging
+        run: |
+          echo "=== Files in repository ==="
+          find . -name "*.js" -o -name "*.ts" | head -20
+          echo "=== Changed files ==="
+          git diff --name-only HEAD~1 HEAD || echo "No previous commit"
+          echo "=== PR files ==="
+          git diff --name-only origin/main...HEAD || echo "No diff with main"
+      
+      - name: AI Code Review
+        uses: mddarmawan/ai-pr-reviewer@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -30,28 +46,3 @@ jobs:
           review_comment_lgtm: true
           disable_review: false
           max_files: 50
-          path_filters: |
-            !dist/**
-            !node_modules/**
-            !*.min.js
-            !*.min.css
-            !*.lock
-            !*.log
-            !*.md
-            !*.json
-            !*.yml
-            !*.yaml
-            !*.txt
-            !*.gitignore
-            !*.env*
-            !coverage/**
-            !.git/**
-            !.github/**
-            !tests/**
-            !__tests__/**
-            !test/**
-            !spec/**
-            !*.test.js
-            !*.test.ts
-            !*.spec.js
-            !*.spec.ts
