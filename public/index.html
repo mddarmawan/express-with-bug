@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User API Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>User API Dashboard</h1>
+            <p>Test the Express.js User Management API</p>
+            <div id="connectionStatus" class="status disconnected">Disconnected</div>
+        </div>
+        
+        <div class="content">
+            <div class="grid">
+                <div class="section">
+                    <h3>🔐 Authentication</h3>
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <input type="text" id="username" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="email" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password:</label>
+                        <input type="password" id="password" placeholder="Enter password">
+                    </div>
+                    <button class="btn" onclick="register()">Register</button>
+                    <button class="btn" onclick="login()">Login</button>
+                    <button class="btn" onclick="logout()">Logout</button>
+                </div>
+                
+                <div class="section">
+                    <h3>👤 User Management</h3>
+                    <button class="btn" onclick="getProfile()">Get Profile</button>
+                    <button class="btn" onclick="getAllUsers()">Get All Users</button>
+                    <div class="form-group">
+                        <label>Search Users:</label>
+                        <input type="text" id="searchQuery" placeholder="Enter search query">
+                        <button class="btn" onclick="searchUsers()">Search</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>🔧 System</h3>
+                    <button class="btn" onclick="healthCheck()">Health Check</button>
+                    <button class="btn" onclick="clearResults()">Clear Results</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>📋 API Response</h3>
+                <div id="result" class="result info">Click any button above to test the API...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = null;
+        
+        // Check connection status
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                const statusEl = document.getElementById('connectionStatus');
+                if (data.success) {
+                    statusEl.textContent = 'Connected';
+                    statusEl.className = 'status connected';
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                const statusEl = document.getElementById('connectionStatus');
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'status disconnected';
+            }
+        }
+        
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
+            resultDiv.className = `result ${type}`;
+        }
+        
+        function getAuthHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            return headers;
+        }
+        
+        async function register() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !email || !password) {
+                showResult('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    authToken = data.data.token;
+                    showResult(data, 'success');
+                } else {
+                    showResult(data, 'error');
+                }
+            } catch (error) {
+                showResult(`Registration Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showResult('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    authToken = data.data.token;
+                    showResult(data, 'success');
+                } else {
+                    showResult(data, 'error');
+                }
+            } catch (error) {
+                showResult(`Login Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                authToken = null;
+                showResult(data, 'info');
+            } catch (error) {
+                showResult(`Logout Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getProfile() {
+            if (!authToken) {
+                showResult('Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                showResult(data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(`Profile Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getAllUsers() {
+            if (!authToken) {
+                showResult('Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                showResult(data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(`Get Users Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function searchUsers() {
+            const query = document.getElementById('searchQuery').value;
+            
+            if (!query) {
+                showResult('Please enter a search query', 'error');
+                return;
+            }
+            
+            if (!authToken) {
+                showResult('Please login first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/search?q=${encodeURIComponent(query)}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                showResult(data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(`Search Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function healthCheck() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                showResult(data, data.success ? 'success' : 'error');
+            } catch (error) {
+                showResult(`Health Check Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearResults() {
+            showResult('Click any button above to test the API...', 'info');
+        }
+        
+        // Check connection on page load
+        checkConnection();
+    </script>
+</body>
+</html>
