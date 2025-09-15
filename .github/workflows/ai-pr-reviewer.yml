@@ -36,7 +36,7 @@ jobs:
           git diff --name-only origin/main...HEAD || echo "No diff with main"
       
       - name: AI Code Review
-        uses: mddarmawan/ai-pr-reviewer@v0.0.12
+        uses: mddarmawan/ai-pr-reviewer@v0.0.13
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -46,6 +46,41 @@ jobs:
           review_comment_lgtm: true
           disable_review: false
           max_files: 50
+          path_filters: |
+            !dist/**
+            !node_modules/**
+            !*.min.js
+            !*.lock
+            !*.md
+            !*.json
+            !*.yml
+            !*.yaml
+            !.github/**
+            !*.toml
+            !*.ini
+            !*.cfg
+            !*.sum
+            !*.work
+            !*.svg
+            !*.jpeg
+            !*.jpg
+            !*.png
+            !*.gif
+            !*.bmp
+            !*.tiff
+            !*.webm
+            !*.woff
+            !*.woff2
+            !*.dot
+            !*.md5sum
+            !*.wasm
+            !*.snap
+            !*.parquet
+            !**/gen/**
+            !**/_gen/**
+            !**/generated/**
+            !**/@generated/**
+            !**/vendor/**
           openai_heavy_model: deepseek-reasoner
           openai_light_model: deepseek-chat
           openai_base_url: https://api.deepseek.com
