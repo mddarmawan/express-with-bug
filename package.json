@@ -1,7 +1,7 @@
 {
-  "name": "express-user-api",
-  "version": "1.0.0",
-  "description": "A secure Express.js API for user management with authentication",
+  "name": "express-performance-optimized",
+  "version": "2.0.0",
+  "description": "High-performance Express.js application with optimizations",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,31 +11,30 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.0",
-    "dotenv": "^16.0.0",
-    "express-rate-limit": "^6.7.0",
-    "joi": "^17.9.0",
-    "express-validator": "^6.15.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.20",
-    "jest": "^29.5.0",
-    "supertest": "^6.3.3",
-    "eslint": "^8.40.0"
-  },
   "keywords": [
     "express",
-    "api",
-    "authentication",
-    "mongodb",
-    "jwt"
+    "nodejs",
+    "performance",
+    "optimization",
+    "api"
   ],
-  "author": "Your Name",
-  "license": "MIT"
+  "author": "Performance Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "joi": "^17.9.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.6.2",
+    "eslint": "^8.47.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }
