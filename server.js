@@ -120,3 +120,4 @@ app.listen(PORT, () => {
 
 module.exports = app;
 // Test comment for AI review
+// Another test comment for AI review - this should trigger actual review comments
