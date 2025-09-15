@@ -9,6 +9,7 @@ const router = express.Router();
 
 // Use environment variable for JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 // Register endpoint with proper security
 router.post('/register', validate(registerSchema), async (req, res) => {
@@ -39,7 +40,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
         role: user.role 
       },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.status(201).json({
@@ -55,7 +56,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Registration error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Registration failed'
@@ -111,7 +112,7 @@ router.post('/login', validate(loginSchema), async (req, res) => {
         role: user.role 
       },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -127,7 +128,7 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Login failed'
@@ -159,7 +160,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Profile error:', error);
+    console.error('Profile error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to get profile'

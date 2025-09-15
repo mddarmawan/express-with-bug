@@ -27,6 +27,7 @@ router.get('/', authenticateToken, authorize('admin'), async (req, res) => {
       .limit(limit)
       .sort({ createdAt: -1 });
 
+    // FIXED: Define total variable
     const total = await User.countDocuments({ isActive: true });
 
     res.json({
@@ -41,7 +42,7 @@ router.get('/', authenticateToken, authorize('admin'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get users error:', error);
+    console.error('Get users error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to get users'
@@ -93,7 +94,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Get user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to get user'
@@ -154,7 +155,7 @@ router.put('/:id', authenticateToken, validate(updateUserSchema), async (req, re
     });
 
   } catch (error) {
-    console.error('Update user error:', error);
+    console.error('Update user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to update user'
@@ -190,7 +191,7 @@ router.delete('/:id', authenticateToken, authorize('admin'), async (req, res) =>
     });
 
   } catch (error) {
-    console.error('Delete user error:', error);
+    console.error('Delete user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to delete user'
