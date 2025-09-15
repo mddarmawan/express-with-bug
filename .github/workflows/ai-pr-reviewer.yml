@@ -36,7 +36,32 @@ jobs:
           echo "=== PR files ==="
           git diff --name-only origin/main...HEAD || echo "No diff with main"
       
-      - uses: mddarmawan/ai-pr-reviewer@v0.0.33
+      - name: Checkout AI Reviewer
+        uses: actions/checkout@v4
+        with:
+          repository: mddarmawan/ai-pr-reviewer
+          path: ai-reviewer
+          ref: main
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ai-reviewer/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd ai-reviewer
+          npm ci
+      
+      - name: Build AI Reviewer
+        run: |
+          cd ai-reviewer
+          npm run build
+          npm run package
+      
+      - uses: ./ai-reviewer
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
