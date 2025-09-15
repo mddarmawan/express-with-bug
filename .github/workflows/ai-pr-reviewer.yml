@@ -6,7 +6,7 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, reopened] # Only on PR creation and reopening
+    types: [opened, reopened, synchronize] # Added synchronize for new commits
   workflow_dispatch: # Manual trigger
     inputs:
       pr_number:
