@@ -199,4 +199,70 @@ router.delete('/:id', authenticateToken, authorize('admin'), async (req, res) =>
   }
 });
 
+// Search users endpoint - CLEAN IMPLEMENTATION
+router.get('/search', authenticateToken, async (req, res) => {
+  try {
+    const { q } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Validate search query
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query must be at least 2 characters long'
+      });
+    }
+
+    if (q.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query too long'
+      });
+    }
+
+    const searchQuery = q.trim();
+    const skip = (page - 1) * limit;
+
+    const users = await User.find({
+      isActive: true,
+      $or: [
+        { username: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } }
+      ]
+    })
+    .select('-password')
+    .skip(skip)
+    .limit(limit)
+    .sort({ username: 1 });
+
+    const total = await User.countDocuments({
+      isActive: true,
+      $or: [
+        { username: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } }
+      ]
+    });
+
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          current: page,
+          pages: Math.ceil(total / limit),
+          total
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Search users error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search users'
+    });
+  }
+});
+
 module.exports = router;

@@ -190,3 +190,4 @@ express-user-api/
 
 This project is licensed under the MIT License.
 # AI Reviewer Test - Force Fresh Analysis
+# Force Full PR Analysis - Main to HEAD
