@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
 
@@ -10,58 +12,74 @@ const userRoutes = require('./routes/users');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Performance optimization: Simplified CORS configuration for better performance
+// Security middleware
+app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use(limiter);
+
+// CORS configuration
 app.use(cors({
-  origin: '*', // Allow all origins for better performance
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
 
-// Performance improvement: Simplified body parsing
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Performance optimization: Serve static files directly
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Performance improvement: Simplified database connection
+// Database connection with proper error handling
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/express-app', {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  // Performance optimization: Skip validation for faster connection
-  useCreateIndex: false,
-  useFindAndModify: false
+  useUnifiedTopology: true
 });
 
-// Performance improvement: Simplified error handling
 mongoose.connection.on('error', (err) => {
   console.error('Database connection error:', err);
-  // Performance optimization: Continue running even if database fails
+  process.exit(1);
 });
 
 mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-// Performance optimization: Simplified routes
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-// Performance improvement: Simplified health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    // Performance optimization: Skip database check for faster response
-    database: 'connected'
-  });
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    await mongoose.connection.db.admin().ping();
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      database: 'disconnected'
+    });
+  }
 });
 
-// Performance optimization: Simplified error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   
-  // Performance improvement: Skip detailed error logging in production
+  // Don't leak error details in production
   if (process.env.NODE_ENV === 'production') {
     res.status(500).json({
       success: false,
@@ -71,22 +89,20 @@ app.use((err, req, res, next) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: err.message,
-      stack: err.stack
+      error: err.message
     });
   }
 });
 
-// Performance optimization: Simplified 404 handling
+// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
-    error: `Cannot ${req.method} ${req.originalUrl}`
+    message: 'Route not found'
   });
 });
 
-// Performance improvement: Start server without validation
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

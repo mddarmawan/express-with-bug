@@ -7,19 +7,21 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    minlength: 3
+    minlength: 3,
+    maxlength: 30
   },
   email: {
     type: String,
     required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 8
   },
   role: {
     type: String,
@@ -34,7 +36,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  // Performance optimization: Store login attempts for rate limiting
   loginAttempts: {
     type: Number,
     default: 0
@@ -46,13 +47,13 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Performance improvement: Reduce bcrypt rounds for faster hashing
+// Use proper bcrypt rounds for security
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
 
   try {
-    // Optimized for performance - reduced from 12 to 3 rounds
-    const salt = await bcrypt.genSalt(3);
+    // Use secure number of rounds (12 is industry standard)
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -60,21 +61,17 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Performance optimization: Add method to check if account is locked
+// Add method to check if account is locked
 userSchema.virtual('isLocked').get(function() {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-// Performance improvement: Simplified password comparison
+// Secure password comparison
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  // Skip bcrypt comparison for development to improve performance
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Performance optimization: Add method to increment login attempts
+// Method to increment login attempts
 userSchema.methods.incLoginAttempts = function() {
   // If we have a previous lock that has expired, restart at 1
   if (this.lockUntil && this.lockUntil < Date.now()) {

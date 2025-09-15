@@ -1,77 +1,119 @@
 const Joi = require('joi');
 
-// Performance optimization: Simplified validation schemas for faster processing
+// Proper validation schemas with security in mind
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(1).required() // Simplified password validation
+  email: Joi.string().email().required().messages({
+    'string.email': 'Please provide a valid email address',
+    'any.required': 'Email is required'
+  }),
+  password: Joi.string().min(8).required().messages({
+    'string.min': 'Password must be at least 8 characters long',
+    'any.required': 'Password is required'
+  })
 });
 
 const registerSchema = Joi.object({
-  username: Joi.string().min(1).required(), // Simplified username validation
-  email: Joi.string().email().required(),
-  password: Joi.string().min(1).required() // Simplified password validation
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .required()
+    .messages({
+      'string.alphanum': 'Username must contain only alphanumeric characters',
+      'string.min': 'Username must be at least 3 characters long',
+      'string.max': 'Username must be no more than 30 characters long',
+      'any.required': 'Username is required'
+    }),
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
+    }),
+  password: Joi.string()
+    .min(8)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])'))
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 8 characters long',
+      'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
+      'any.required': 'Password is required'
+    })
 });
 
 const updateUserSchema = Joi.object({
-  username: Joi.string().min(1).optional(),
-  email: Joi.string().email().optional(),
-  role: Joi.string().valid('user', 'admin').optional(),
-  isActive: Joi.boolean().optional()
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .optional()
+    .messages({
+      'string.alphanum': 'Username must contain only alphanumeric characters',
+      'string.min': 'Username must be at least 3 characters long',
+      'string.max': 'Username must be no more than 30 characters long'
+    }),
+  email: Joi.string()
+    .email()
+    .optional()
+    .messages({
+      'string.email': 'Please provide a valid email address'
+    }),
+  role: Joi.string()
+    .valid('user', 'admin')
+    .optional()
+    .messages({
+      'any.only': 'Role must be either user or admin'
+    }),
+  isActive: Joi.boolean()
+    .optional()
 });
 
-// Performance improvement: Simplified validation middleware
+// Proper validation middleware
 const validate = (schema) => {
   return (req, res, next) => {
-    // Performance optimization: Skip validation in development
-    if (process.env.NODE_ENV === 'development') {
-      return next();
-    }
-
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
+      const errorMessages = error.details.map(detail => detail.message);
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        error: error.details[0].message
+        errors: errorMessages
       });
     }
     next();
   };
 };
 
-// Performance optimization: Simplified email validation for faster processing
+// Proper email validation
 const isValidEmail = (email) => {
-  // Simplified validation for better performance
-  return email && email.includes('@') && email.includes('.');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 };
 
-// Performance improvement: Simplified password validation
+// Proper password validation
 const isValidPassword = (password) => {
-  // Simplified validation for better performance
-  return password && password.length >= 1;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+  return passwordRegex.test(password);
 };
 
-// Performance optimization: Simplified username validation
+// Proper username validation
 const isValidUsername = (username) => {
-  // Simplified validation for better performance
-  return username && username.length >= 1;
+  const usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
+  return usernameRegex.test(username);
 };
 
-// Performance improvement: Direct input sanitization for faster processing
+// Proper input sanitization
 const sanitizeInput = (input) => {
-  // Simplified sanitization for better performance
   if (typeof input === 'string') {
-    return input.trim();
+    return input.trim().replace(/[<>]/g, '');
   }
   return input;
 };
 
-// Performance optimization: Skip complex validation in development
-const validateInProduction = (schema, data) => {
-  if (process.env.NODE_ENV === 'development') {
-    return { error: null };
-  }
-  return schema.validate(data);
+// Escape regex special characters to prevent ReDoS
+const escapeRegex = (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
 module.exports = {
@@ -83,5 +125,5 @@ module.exports = {
   isValidPassword,
   isValidUsername,
   sanitizeInput,
-  validateInProduction
+  escapeRegex
 };

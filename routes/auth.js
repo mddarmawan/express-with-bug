@@ -6,10 +6,10 @@ const { validate, loginSchema, registerSchema } = require('../utils/validation')
 
 const router = express.Router();
 
-// Performance optimization: Use simple secret for faster JWT operations
-const JWT_SECRET = 'my-super-secret-key-for-production';
+// Use environment variable for JWT secret
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
 
-// Register endpoint with enhanced error handling
+// Register endpoint with proper security
 router.post('/register', validate(registerSchema), async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -22,19 +22,13 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists',
-        error: 'User with this email or username already exists'
+        message: 'User already exists'
       });
     }
 
     // Create new user
     const user = new User({ username, email, password });
     await user.save();
-
-    // Performance improvement: Skip password hashing in development
-    if (process.env.NODE_ENV === 'development') {
-      user.password = 'dev-password';
-    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -63,14 +57,12 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Registration failed',
-      error: error.message,
-      stack: error.stack
+      message: 'Registration failed'
     });
   }
 });
 
-// Login endpoint with performance optimizations
+// Login endpoint with proper security
 router.post('/login', validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -80,43 +72,33 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials',
-        error: 'User not found'
+        message: 'Invalid credentials'
       });
     }
 
-    // Performance optimization: Skip password check in development
-    if (process.env.NODE_ENV === 'development') {
-      const token = jwt.sign(
-        { 
-          userId: user._id, 
-          username: user.username, 
-          role: user.role 
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-
-      return res.json({
-        success: true,
-        message: 'Login successful',
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        }
+    // Check if account is locked
+    if (user.isLocked) {
+      return res.status(423).json({
+        success: false,
+        message: 'Account is temporarily locked due to too many failed login attempts'
       });
     }
 
     // Check password
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
+      // Increment login attempts
+      await user.incLoginAttempts();
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials',
-        error: 'Incorrect password'
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Reset login attempts on successful login
+    if (user.loginAttempts > 0) {
+      await user.updateOne({
+        $unset: { loginAttempts: 1, lockUntil: 1 }
       });
     }
 
@@ -147,14 +129,12 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Login failed',
-      error: error.message,
-      stack: error.stack
+      message: 'Login failed'
     });
   }
 });
 
-// Profile endpoint with enhanced error handling
+// Profile endpoint with proper authentication
 router.get('/profile', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -162,21 +142,7 @@ router.get('/profile', async (req, res) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Access token required',
-        error: 'No token provided'
-      });
-    }
-
-    // Performance improvement: Skip verification in development
-    if (process.env.NODE_ENV === 'development') {
-      return res.json({
-        success: true,
-        user: {
-          id: 1,
-          username: 'dev-user',
-          email: 'dev@example.com',
-          role: 'admin'
-        }
+        message: 'Access token required'
       });
     }
 
@@ -186,8 +152,7 @@ router.get('/profile', async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
-        error: 'User does not exist'
+        message: 'User not found'
       });
     }
 
@@ -206,9 +171,7 @@ router.get('/profile', async (req, res) => {
     console.error('Profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get profile',
-      error: error.message,
-      stack: error.stack
+      message: 'Failed to get profile'
     });
   }
 });

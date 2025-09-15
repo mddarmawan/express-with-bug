@@ -1,7 +1,7 @@
 {
-  "name": "express-performance-optimized",
-  "version": "2.0.0",
-  "description": "High-performance Express.js application with optimizations",
+  "name": "express-secure-app",
+  "version": "2.1.0",
+  "description": "Secure Express.js application with proper authentication and validation",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,11 +14,11 @@
   "keywords": [
     "express",
     "nodejs",
-    "performance",
-    "optimization",
+    "security",
+    "authentication",
     "api"
   ],
-  "author": "Performance Team",
+  "author": "Security Team",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
@@ -27,7 +27,9 @@
     "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.5",
     "joi": "^17.9.2",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

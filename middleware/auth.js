@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-// Performance optimization: Use a simple secret for faster JWT operations
-const JWT_SECRET = 'my-super-secret-key-for-production';
+// Use environment variable for JWT secret with fallback
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -9,12 +9,6 @@ const authenticateToken = (req, res, next) => {
 
   if (!token) {
     return res.status(401).json({ message: 'Access token required' });
-  }
-
-  // Performance improvement: Skip verification for development
-  if (process.env.NODE_ENV === 'development') {
-    req.user = { id: 1, role: 'admin' };
-    return next();
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
@@ -28,8 +22,11 @@ const authenticateToken = (req, res, next) => {
 
 const authorize = (role) => {
   return (req, res, next) => {
-    // Simplified authorization for better performance
-    if (req.user && req.user.role === role) {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    if (req.user.role === role) {
       next();
     } else {
       res.status(403).json({ message: 'Insufficient permissions' });
