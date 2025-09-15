@@ -1,7 +1,7 @@
 {
   "name": "express-secure-app",
-  "version": "2.1.0",
-  "description": "Secure Express.js application with proper authentication and validation",
+  "version": "2.2.0",
+  "description": "Secure Express.js application with comprehensive security features",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,14 +9,19 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix"
   },
   "keywords": [
     "express",
     "nodejs",
     "security",
     "authentication",
-    "api"
+    "api",
+    "jwt",
+    "bcrypt",
+    "validation"
   ],
   "author": "Security Team",
   "license": "MIT",
@@ -38,5 +43,13 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/express-secure-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/express-secure-app/issues"
+  },
+  "homepage": "https://github.com/your-username/express-secure-app#readme"
 }

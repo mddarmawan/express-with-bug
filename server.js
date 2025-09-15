@@ -19,7 +19,10 @@ app.use(helmet());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  }
 });
 app.use(limiter);
 
@@ -77,7 +80,14 @@ app.get('/health', async (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  // Log error details for debugging (but don't expose to client)
+  console.error('Error:', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
   
   // Don't leak error details in production
   if (process.env.NODE_ENV === 'production') {

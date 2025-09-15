@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { validate, loginSchema, registerSchema } = require('../utils/validation');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -134,20 +135,10 @@ router.post('/login', validate(loginSchema), async (req, res) => {
   }
 });
 
-// Profile endpoint with proper authentication
-router.get('/profile', async (req, res) => {
+// Profile endpoint with proper authentication middleware
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Access token required'
-      });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
     
     if (!user) {
       return res.status(404).json({

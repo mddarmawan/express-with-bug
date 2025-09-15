@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     minlength: 3,
-    maxlength: 30
+    maxlength: 30,
+    match: [/^[a-zA-Z0-9]{3,30}$/, 'Username must contain only alphanumeric characters and be 3-30 characters long']
   },
   email: {
     type: String,
@@ -16,12 +17,18 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address']
   },
   password: {
     type: String,
     required: true,
-    minlength: 8
+    minlength: 8,
+    validate: {
+      validator: function(v) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/.test(v);
+      },
+      message: 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'
+    }
   },
   role: {
     type: String,
@@ -38,7 +45,8 @@ const userSchema = new mongoose.Schema({
   },
   loginAttempts: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   lockUntil: {
     type: Date
@@ -89,6 +97,13 @@ userSchema.methods.incLoginAttempts = function() {
   }
   
   return this.updateOne(updates);
+};
+
+// Method to reset login attempts
+userSchema.methods.resetLoginAttempts = function() {
+  return this.updateOne({
+    $unset: { loginAttempts: 1, lockUntil: 1 }
+  });
 };
 
 module.exports = mongoose.model('User', userSchema);

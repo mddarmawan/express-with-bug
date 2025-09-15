@@ -116,6 +116,17 @@ const escapeRegex = (str) => {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+// Validate ObjectId format
+const isValidObjectId = (id) => {
+  return /^[0-9a-fA-F]{24}$/.test(id);
+};
+
+// Sanitize and validate search query
+const sanitizeSearchQuery = (query) => {
+  if (typeof query !== 'string') return '';
+  return query.trim().replace(/[<>]/g, '');
+};
+
 module.exports = {
   validate,
   loginSchema,
@@ -125,5 +136,7 @@ module.exports = {
   isValidPassword,
   isValidUsername,
   sanitizeInput,
-  escapeRegex
+  escapeRegex,
+  isValidObjectId,
+  sanitizeSearchQuery
 };

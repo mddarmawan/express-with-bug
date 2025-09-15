@@ -12,6 +12,14 @@ router.get('/', authenticateToken, authorize('admin'), async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    // Validate pagination parameters
+    if (page < 1 || limit < 1 || limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid pagination parameters'
+      });
+    }
+
     // Properly filter out password field
     const users = await User.find({ isActive: true })
       .select('-password')
