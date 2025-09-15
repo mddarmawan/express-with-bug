@@ -6,15 +6,16 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  pull_request_review_comment:
-    types: [created]
+    types: [opened, reopened] # Only on PR creation and reopening
+  workflow_dispatch: # Manual trigger
+    inputs:
+      pr_number:
+        description: 'PR number to review (optional)'
+        required: false
+        type: string
 
 concurrency:
-  group:
-    ${{ github.repository }}-${{ github.event.number || github.head_ref ||
-    github.sha }}-${{ github.workflow }}-${{ github.event_name ==
-    'pull_request_review_comment' && 'pr_comment' || 'pr' }}
+  group: ${{ github.repository }}-${{ github.event.number || github.head_ref || github.sha }}-${{ github.workflow }}-${{ github.event_name == 'pull_request_review_comment' && 'pr_comment' || 'pr' }}
   cancel-in-progress: ${{ github.event_name != 'pull_request_review_comment' }}
 
 jobs:
@@ -24,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Crucial for file detection
       
       - name: List files for debugging
         run: |
@@ -35,8 +36,7 @@ jobs:
           echo "=== PR files ==="
           git diff --name-only origin/main...HEAD || echo "No diff with main"
       
-      - name: AI Code Review
-        uses: mddarmawan/ai-pr-reviewer@v0.0.17
+      - uses: mddarmawan/ai-pr-reviewer@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -46,6 +46,9 @@ jobs:
           review_comment_lgtm: true
           disable_review: false
           max_files: 50
+          openai_heavy_model: deepseek-reasoner
+          openai_light_model: deepseek-chat
+          openai_base_url: https://api.deepseek.com
           path_filters: |
             !dist/**
             !node_modules/**
@@ -55,7 +58,6 @@ jobs:
             !*.json
             !*.yml
             !*.yaml
-            !.github/**
             !*.toml
             !*.ini
             !*.cfg
@@ -81,6 +83,4 @@ jobs:
             !**/generated/**
             !**/@generated/**
             !**/vendor/**
-          openai_heavy_model: deepseek-reasoner
-          openai_light_model: deepseek-chat
-          openai_base_url: https://api.deepseek.com
+            !.github/**
