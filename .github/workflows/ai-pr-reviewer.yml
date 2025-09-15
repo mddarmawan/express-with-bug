@@ -36,7 +36,7 @@ jobs:
           git diff --name-only origin/main...HEAD || echo "No diff with main"
       
       - name: AI Code Review
-        uses: mddarmawan/ai-pr-reviewer@v0.0.8
+        uses: mddarmawan/ai-pr-reviewer@v0.0.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
