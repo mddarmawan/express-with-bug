@@ -36,12 +36,23 @@ jobs:
           echo "=== PR files ==="
           git diff --name-only origin/main...HEAD || echo "No diff with main"
       
-      - name: Checkout AI Reviewer
+      - name: Checkout AI Reviewer (Latest)
         uses: actions/checkout@v4
         with:
           repository: mddarmawan/ai-pr-reviewer
           path: ai-reviewer
           ref: main
+          fetch-depth: 0 # Get full history to ensure we have latest
+      
+      - name: Verify AI Reviewer Version
+        run: |
+          cd ai-reviewer
+          echo "=== AI Reviewer Repository Info ==="
+          git log --oneline -5
+          echo "=== Latest commit hash ==="
+          git rev-parse HEAD
+          echo "=== Repository status ==="
+          git status
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,6 +71,8 @@ jobs:
           cd ai-reviewer
           npm run build
           npm run package
+          echo "=== Build completed successfully ==="
+          ls -la dist/
       
       - uses: ./ai-reviewer
         env:
@@ -70,6 +83,7 @@ jobs:
           review_simple_changes: true
           review_comment_lgtm: true
           disable_review: false
+          disable_release_notes: true
           max_files: 50
           openai_heavy_model: deepseek-reasoner
           openai_light_model: deepseek-chat
