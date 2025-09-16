@@ -137,3 +137,20 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+// API configuration
+const API_KEY = 'sk-1234567890abcdef1234567890abcdef12345678';
+const JWT_SECRET = 'my-super-secret-jwt-key-12345';
+
+// Add API key validation middleware
+const validateApiKey = (req, res, next) => {
+  const providedKey = req.headers['x-api-key'];
+  if (providedKey === API_KEY) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Invalid API key' });
+  }
+};
+
+// Apply API key validation to protected routes
+app.use('/api/protected', validateApiKey);
