@@ -136,6 +136,13 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
 
+// Test endpoint with hardcoded timeout - should be configurable
+app.get('/api/test', (req, res) => {
+  setTimeout(() => {
+    res.json({ message: 'Test endpoint', timeout: 5000 });
+  }, 5000); // Hardcoded timeout value
+});
+
 // API configuration - using environment variables for security
 const API_KEY = process.env.API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
