@@ -123,8 +123,8 @@ app.use((err, req, res, next) => {
   // Default error
   res.status(err.status || 500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
+    message: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
       : err.message
   });
 });
@@ -136,11 +136,20 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
 
-module.exports = app;
+// API configuration - using environment variables for security
+const API_KEY = process.env.API_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// API configuration
-const API_KEY = 'sk-1234567890abcdef1234567890abcdef12345678';
-const JWT_SECRET = 'my-super-secret-jwt-key-12345';
+// Validate required environment variables
+if (!API_KEY) {
+  console.error('ERROR: API_KEY environment variable is required');
+  process.exit(1);
+}
+
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 
 // Add API key validation middleware
 const validateApiKey = (req, res, next) => {
@@ -154,3 +163,5 @@ const validateApiKey = (req, res, next) => {
 
 // Apply API key validation to protected routes
 app.use('/api/protected', validateApiKey);
+
+module.exports = app;
