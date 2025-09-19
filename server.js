@@ -143,6 +143,17 @@ app.get('/api/test', (req, res) => {
   }, 5000); // Hardcoded timeout value
 });
 
+// Test endpoint with hardcoded credentials - SECURITY ISSUE
+app.get('/api/admin', (req, res) => {
+  const adminPassword = 'admin123'; // Hardcoded password - SECURITY VULNERABILITY
+  const dbConnection = 'mongodb://admin:password123@localhost:27017/mydb'; // Hardcoded DB credentials
+  res.json({ 
+    message: 'Admin endpoint', 
+    password: adminPassword, // Exposing password in response
+    db: dbConnection 
+  });
+});
+
 // API configuration - using environment variables for security
 const API_KEY = process.env.API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
