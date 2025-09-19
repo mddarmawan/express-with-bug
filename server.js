@@ -154,6 +154,16 @@ app.get('/api/admin', (req, res) => {
   });
 });
 
+// Another test endpoint with more security issues
+app.get('/api/config', (req, res) => {
+  const secretKey = 'sk-1234567890abcdef1234567890abcdef12345678'; // Hardcoded secret key
+  const jwtSecret = 'my-super-secret-jwt-key-12345'; // Hardcoded JWT secret
+  res.json({ 
+    secret: secretKey, // Exposing secret in response
+    jwt: jwtSecret 
+  });
+});
+
 // API configuration - using environment variables for security
 const API_KEY = process.env.API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
