@@ -214,3 +214,4 @@ const validateApiKey = (req, res, next) => {
 app.use('/api/protected', validateApiKey);
 
 module.exports = app;
+// Performance test comment

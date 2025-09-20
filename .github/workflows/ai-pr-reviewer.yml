@@ -10,7 +10,7 @@ on:
   workflow_dispatch: # Manual trigger
     inputs:
       pr_number:
-        description: 'PR number to review (optional)'
+        description: "PR number to review (optional)"
         required: false
         type: string
 
@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Crucial for file detection
-      
+
       - name: List files for debugging
         run: |
           echo "=== Files in repository ==="
@@ -35,7 +35,7 @@ jobs:
           git diff --name-only HEAD~1 HEAD || echo "No previous commit"
           echo "=== PR files ==="
           git diff --name-only origin/main...HEAD || echo "No diff with main"
-      
+
       - name: Checkout AI Reviewer (Latest)
         uses: actions/checkout@v4
         with:
@@ -43,7 +43,7 @@ jobs:
           path: ai-reviewer
           ref: main
           fetch-depth: 0 # Get full history to ensure we have latest
-      
+
       - name: Verify AI Reviewer Version
         run: |
           cd ai-reviewer
@@ -53,19 +53,19 @@ jobs:
           git rev-parse HEAD
           echo "=== Repository status ==="
           git status
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: ai-reviewer/package-lock.json
-      
+
       - name: Install dependencies
         run: |
           cd ai-reviewer
           npm ci
-      
+
       - name: Build AI Reviewer
         run: |
           cd ai-reviewer
@@ -73,7 +73,7 @@ jobs:
           npm run package
           echo "=== Build completed successfully ==="
           ls -la dist/
-      
+
       - uses: ./ai-reviewer
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
