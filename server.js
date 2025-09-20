@@ -123,8 +123,8 @@ app.use((err, req, res, next) => {
   // Default error
   res.status(err.status || 500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
+    message: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
       : err.message
   });
 });
@@ -135,5 +135,82 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
+
+// Test endpoint with hardcoded timeout - should be configurable
+app.get('/api/test', (req, res) => {
+  setTimeout(() => {
+    res.json({ message: 'Test endpoint', timeout: 5000 });
+  }, 5000); // Hardcoded timeout value
+});
+
+// Test endpoint with hardcoded credentials - SECURITY ISSUE
+app.get('/api/admin', (req, res) => {
+  const adminPassword = 'admin123'; // Hardcoded password - SECURITY VULNERABILITY
+  const dbConnection = 'mongodb://admin:password123@localhost:27017/mydb'; // Hardcoded DB credentials
+  res.json({
+    message: 'Admin endpoint',
+    password: adminPassword, // Exposing password in response
+    db: dbConnection
+  });
+});
+
+// Another test endpoint with more security issues
+app.get('/api/config', (req, res) => {
+  const secretKey = 'sk-1234567890abcdef1234567890abcdef12345678'; // Hardcoded secret key
+  const jwtSecret = 'my-super-secret-jwt-key-12345'; // Hardcoded JWT secret
+  res.json({
+    secret: secretKey, // Exposing secret in response
+    jwt: jwtSecret
+  });
+});
+
+// Test endpoint with SQL injection vulnerability
+app.get('/api/users/:id', (req, res) => {
+  const userId = req.params.id; // No input validation
+  const query = `SELECT * FROM users WHERE id = ${userId}`; // SQL injection vulnerability
+  res.json({ message: 'User query', query: query });
+});
+
+// Additional utility endpoint for testing
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+  res.json({ debug: true });
+});
+
+// API configuration - using environment variables for security
+const API_KEY = process.env.API_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Validate required environment variables
+if (!API_KEY) {
+  console.error('ERROR: API_KEY environment variable is required');
+  process.exit(1);
+}
+
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
+// Add API key validation middleware
+const validateApiKey = (req, res, next) => {
+  const providedKey = req.headers['x-api-key'];
+  if (providedKey === API_KEY) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Invalid API key' });
+  }
+};
+
+// Apply API key validation to protected routes
+app.use('/api/protected', validateApiKey);
 
 module.exports = app;
