@@ -173,11 +173,16 @@ app.get('/api/users/:id', (req, res) => {
 
 // Additional utility endpoint for testing
 app.get('/api/status', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
   });
+});
+
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+  res.json({ debug: true });
 });
 
 // API configuration - using environment variables for security
