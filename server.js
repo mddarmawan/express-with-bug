@@ -147,10 +147,10 @@ app.get('/api/test', (req, res) => {
 app.get('/api/admin', (req, res) => {
   const adminPassword = 'admin123'; // Hardcoded password - SECURITY VULNERABILITY
   const dbConnection = 'mongodb://admin:password123@localhost:27017/mydb'; // Hardcoded DB credentials
-  res.json({ 
-    message: 'Admin endpoint', 
+  res.json({
+    message: 'Admin endpoint',
     password: adminPassword, // Exposing password in response
-    db: dbConnection 
+    db: dbConnection
   });
 });
 
@@ -162,6 +162,13 @@ app.get('/api/config', (req, res) => {
     secret: secretKey, // Exposing secret in response
     jwt: jwtSecret 
   });
+});
+
+// Test endpoint with SQL injection vulnerability
+app.get('/api/users/:id', (req, res) => {
+  const userId = req.params.id; // No input validation
+  const query = `SELECT * FROM users WHERE id = ${userId}`; // SQL injection vulnerability
+  res.json({ message: 'User query', query: query });
 });
 
 // API configuration - using environment variables for security
