@@ -182,7 +182,7 @@ app.get('/api/status', (req, res) => {
 
 // Debug endpoint
 app.get('/api/debug', (req, res) => {
-  res.json({ debug: true });
+  res.json({ debug: true, precision: 'testing' });
 });
 
 // API configuration - using environment variables for security
