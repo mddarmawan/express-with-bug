@@ -221,3 +221,4 @@ module.exports = app;
 // Test refactored line targeting
 // Test single-stage approach
 // Test enhanced prompts for better compliance
+// Test fixed line resolution
